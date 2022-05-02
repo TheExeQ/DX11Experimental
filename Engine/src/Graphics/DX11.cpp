@@ -11,9 +11,9 @@ bool DX11::Initialize(HWND hwnd)
 	// Settings for SwapChain
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
-	swapChainDesc.BufferCount = 1;
-	swapChainDesc.BufferDesc.Width = 1280;
-	swapChainDesc.BufferDesc.Height = 720;
+	swapChainDesc.BufferCount = 2;
+	swapChainDesc.BufferDesc.Width = 0;
+	swapChainDesc.BufferDesc.Height = 0;
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
 	swapChainDesc.BufferDesc.RefreshRate.Denominator = 0;
@@ -22,7 +22,7 @@ bool DX11::Initialize(HWND hwnd)
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.SampleDesc.Quality = 0;
 	swapChainDesc.Windowed = TRUE;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	
 	// Create the SwapChain
@@ -79,10 +79,11 @@ bool DX11::Initialize(HWND hwnd)
 
 bool DX11::RenderFrame()
 {
-	const float clearColor[4] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	// Change Window Background Color
+	const float bgColor[4] = { 0.8f, 0.8f, 0.8f, 1.0f };
 
 	myContext->OMSetRenderTargets(1, myRenderTargetView.GetAddressOf(), NULL);
-	myContext->ClearRenderTargetView(myRenderTargetView.Get(), clearColor);
+	myContext->ClearRenderTargetView(myRenderTargetView.Get(), bgColor);
 
 	mySwapChain->Present(1, NULL);
 	return true;
