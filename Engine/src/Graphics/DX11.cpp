@@ -23,7 +23,7 @@ bool DX11::Initialize(HWND hwnd)
 	if (!CreateDepthStencil()) { return false; };
 	if (!CreateRasterizer()) { return false; };
 	if (!CreateShaders()) { return false; };
-	if (!CreateTriangle()) { return false; };
+	if (!CreateSquare()) { return false; };
 
 	std::cout << "Successfully initialized DirectX!" << std::endl;
 	return true;
@@ -192,6 +192,8 @@ bool DX11::CreateRasterizer()
 	vp.TopLeftY = 0;
 	vp.Width = WindowContainer::GetWidth();
 	vp.Height = WindowContainer::GetHeight();
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
 
 	myContext->RSSetViewports(1, &vp);
 	
@@ -219,7 +221,7 @@ bool DX11::CreateShaders()
 	return true;
 }
 
-bool DX11::CreateTriangle()
+bool DX11::CreateSquare()
 {
 	HRESULT hr;
 	
