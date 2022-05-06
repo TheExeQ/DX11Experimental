@@ -25,7 +25,7 @@ private:
 	static bool CreateRasterizer();
 	static bool CreateShaders();
 
-	static bool CreateTriangle();
+	static bool CreateSquare();
 
 	static VertexShader myVertexShader;
 	static PixelShader myPixelShader;

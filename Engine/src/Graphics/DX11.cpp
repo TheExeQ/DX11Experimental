@@ -23,7 +23,7 @@ bool DX11::Initialize(HWND hwnd)
 	if (!CreateDepthStencil()) { return false; };
 	if (!CreateRasterizer()) { return false; };
 	if (!CreateShaders()) { return false; };
-	if (!CreateTriangle()) { return false; };
+	if (!CreateSquare()) { return false; };
 
 	std::cout << "Successfully initialized DirectX!" << std::endl;
 	return true;
@@ -219,16 +219,21 @@ bool DX11::CreateShaders()
 	return true;
 }
 
-bool DX11::CreateTriangle()
+bool DX11::CreateSquare()
 {
 	HRESULT hr;
 	
 	Vertex vertices[] =
 	{
-		Vertex(-0.5f, -0.5f, 0.0f, 1.f, 0.f, 0.f), //Left Bottom
-		Vertex(-0.5f, 0.5f, 0.0f, 0.f, 1.f, 0.f), //Left Top
-		Vertex(0.5f, 0.5f, 0.0f, 0.f, 0.f, 1.f), //Right Top
-		Vertex(0.5f, -0.5f, 0.0f, 1.0f, 0.f, 1.f), //Right Bottom
+		Vertex(-0.5f, -0.5f, 0.2f, 0.f, 1.f, 0.f), //Left Bottom
+		Vertex(-0.5f, 0.5f, 0.2f, 0.f, 1.f, 0.f), //Left Top
+		Vertex(0.5f, 0.5f, 0.2f, 0.f, 1.f, 0.f), //Right Top
+		Vertex(0.5f, -0.5f, 0.2f, 0.0f, 1.f, 0.f), //Right Bottom
+
+		Vertex(-0.8f, -0.8f, 0.0f, 1.f, 0.f, 0.f), //Left Bottom
+		Vertex(-0.8f, 0.8f, 0.0f, 1.f, 0.f, 0.f), //Left Top
+		Vertex(0.8f, 0.8f, 0.0f, 1.f, 0.f, 0.f), //Right Top
+		Vertex(0.8f, -0.8f, 0.0f, 1.0f, 0.f, 0.f), //Right Bottom
 	};
 
 	hr = myVertexBuffer.Initialize(myDevice.Get(), vertices, ARRAYSIZE(vertices));
@@ -242,6 +247,9 @@ bool DX11::CreateTriangle()
 	{
 		0, 1, 2,
 		0, 2, 3,
+		
+		4, 5, 6,
+		4, 6, 7,
 	};
 
 	hr = myIndexBuffer.Initialize(myDevice.Get(), indicies, ARRAYSIZE(indicies));
@@ -258,6 +266,9 @@ bool DX11::RenderFrame()
 	const float bgColor[4] = { 0.8f, 0.8f, 0.8f, 1.0f };
 
 	myContext->OMSetRenderTargets(1, myRenderTargetView.GetAddressOf(), myDepthStencilView.Get());
+	myContext->ClearRenderTargetView(myRenderTargetView.Get(), bgColor);
+	myContext->ClearDepthStencilView(myDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	
 	myContext->OMSetDepthStencilState(myDepthStencilState.Get(), 1);
 	myContext->RSSetState(myRasterizerState.Get());
 	
@@ -267,8 +278,6 @@ bool DX11::RenderFrame()
 	myContext->VSSetShader(myVertexShader.GetShader(), nullptr, 0);
 	myContext->PSSetShader(myPixelShader.GetShader(), nullptr, 0);
 	
-	myContext->ClearRenderTargetView(myRenderTargetView.Get(), bgColor);
-	myContext->ClearDepthStencilView(myDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	UINT offset = 0;
 
