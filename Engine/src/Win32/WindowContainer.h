@@ -13,6 +13,8 @@ public:
 		std::string aWindowTitle = "DirectX Experimental", const std::string& aWindowClass = "DirectX Experimental");
 	bool ProcessMessages();
 	HWND GetWindowHandle() const { return myHandle; };
+	static int GetWidth() { return myWindowWidth; };
+	static int GetHeight() { return myWindowHeight; };
 
 private:
 	HWND myHandle;
@@ -21,7 +23,7 @@ private:
 	std::wstring myWindowTitleWide;
 	std::string myWindowClass;
 	std::wstring myWindowClassWide;
-	int myWindowWidth;
-	int myWindowHeight;
+	static int myWindowWidth;
+	static int myWindowHeight;
 };
 

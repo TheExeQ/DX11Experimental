@@ -11,6 +11,7 @@ project "Engine"
 		"./**.h",
 		"./**.hpp",
 		"./**.cpp",
+		"./**.hlsli",
 		"./**.hlsl"
 	}
 	

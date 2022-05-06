@@ -1,6 +1,9 @@
 #include "WindowContainer.h"
 #include <iostream>
 
+int WindowContainer::myWindowWidth = 0;
+int WindowContainer::myWindowHeight = 0;
+
 void OnResize(HWND hwnd, UINT flag, int width, int height)
 {
 	// Handle resizing
