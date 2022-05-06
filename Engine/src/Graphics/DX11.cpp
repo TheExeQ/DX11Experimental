@@ -225,9 +225,10 @@ bool DX11::CreateTriangle()
 	
 	Vertex vertices[] =
 	{
-		Vertex(-0.5f, -0.5f, 0.0f, 1.0f, 0.f, 0.f), //left
-		Vertex(0.0f, 0.5f, 0.0f, 0.f, 1.f, 0.f), //top
-		Vertex(0.5f, -0.5f, 0.0f, 0.f, 0.f, 1.f), //right
+		Vertex(-0.5f, -0.5f, 0.0f, 1.f, 0.f, 0.f), //Left Bottom
+		Vertex(-0.5f, 0.5f, 0.0f, 0.f, 1.f, 0.f), //Left Top
+		Vertex(0.5f, 0.5f, 0.0f, 0.f, 0.f, 1.f), //Right Top
+		Vertex(0.5f, -0.5f, 0.0f, 1.0f, 0.f, 1.f), //Right Bottom
 	};
 
 	hr = myVertexBuffer.Initialize(myDevice.Get(), vertices, ARRAYSIZE(vertices));
@@ -240,6 +241,7 @@ bool DX11::CreateTriangle()
 	DWORD indicies[] =
 	{
 		0, 1, 2,
+		0, 2, 3,
 	};
 
 	hr = myIndexBuffer.Initialize(myDevice.Get(), indicies, ARRAYSIZE(indicies));
