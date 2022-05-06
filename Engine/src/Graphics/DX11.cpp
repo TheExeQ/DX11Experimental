@@ -232,10 +232,10 @@ bool DX11::CreateSquare()
 		Vertex(0.5f, 0.5f, 0.2f, 0.f, 1.f, 0.f), //Right Top
 		Vertex(0.5f, -0.5f, 0.2f, 0.0f, 1.f, 0.f), //Right Bottom
 
-		Vertex(-0.8f, -0.8f, 0.0f, 1.f, 0.f, 0.f), //Left Bottom
-		Vertex(-0.8f, 0.8f, 0.0f, 1.f, 0.f, 0.f), //Left Top
-		Vertex(0.8f, 0.8f, 0.0f, 1.f, 0.f, 0.f), //Right Top
-		Vertex(0.8f, -0.8f, 0.0f, 1.0f, 0.f, 0.f), //Right Bottom
+		Vertex(-0.8f, -0.8f, 0.3f, 1.f, 0.f, 0.f), //Left Bottom
+		Vertex(-0.8f, 0.8f, 0.3f, 1.f, 0.f, 0.f), //Left Top
+		Vertex(0.8f, 0.8f, 0.3f, 1.f, 0.f, 0.f), //Right Top
+		Vertex(0.8f, -0.8f, 0.3f, 1.0f, 0.f, 0.f), //Right Bottom
 	};
 
 	hr = myVertexBuffer.Initialize(myDevice.Get(), vertices, ARRAYSIZE(vertices));
