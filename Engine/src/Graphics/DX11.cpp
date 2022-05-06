@@ -13,8 +13,7 @@ ComPtr<ID3D11RasterizerState> DX11::myRasterizerState = nullptr;
 
 VertexShader DX11::myVertexShader;
 PixelShader DX11::myPixelShader;
-VertexBuffer<Vertex> DX11::myVertexBuffer;
-IndexBuffer DX11::myIndexBuffer;
+ComPtr<ID3D11Buffer> DX11::myVertexBuffer;
 
 bool DX11::Initialize(HWND hwnd)
 {
@@ -230,22 +229,25 @@ bool DX11::CreateTriangle()
 		Vertex(0.5f, -0.5f, 0.0f, 0.f, 0.f, 1.f), //right
 	};
 
-	hr = myVertexBuffer.Initialize(myDevice.Get(), vertices, ARRAYSIZE(vertices));
+	int bufferSize = ARRAYSIZE(vertices);
+
+	D3D11_BUFFER_DESC vertexBufferDesc = {};
+	ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.ByteWidth = sizeof(Vertex) * ARRAYSIZE(vertices);
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+	vertexBufferDesc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA vertexBufferData;
+	ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
+	vertexBufferData.pSysMem = vertices;
+
+	hr = myDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferData, myVertexBuffer.GetAddressOf());
+
 	if (FAILED(hr))
 	{
 		std::cout << "Failed to initialize vertex buffer" << std::endl;
-		return false;
-	}
-	
-	DWORD indicies[] =
-	{
-		0, 1, 2,
-	};
-
-	hr = myIndexBuffer.Initialize(myDevice.Get(), indicies, ARRAYSIZE(indicies));
-	if (FAILED(hr))
-	{
-		std::cout << "Failed to initialize index buffer" << std::endl;
 		return false;
 	}
 	return true;
@@ -269,10 +271,10 @@ bool DX11::RenderFrame()
 	myContext->ClearDepthStencilView(myDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	UINT offset = 0;
+	UINT stride = sizeof(Vertex);
 
-	myContext->IASetVertexBuffers(0, 1, myVertexBuffer.GetAddressOf(), myVertexBuffer.StridePtr(), &offset);
-	myContext->IASetIndexBuffer(myIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-	myContext->DrawIndexed(myIndexBuffer.BufferSize(), 0, 0);
+	myContext->IASetVertexBuffers(0, 1, myVertexBuffer.GetAddressOf(), &stride, &offset);
+	myContext->Draw(3, 0);
 
 	mySwapChain->Present(1, NULL);
 	return true;

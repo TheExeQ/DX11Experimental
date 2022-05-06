@@ -3,8 +3,6 @@
 #include <wrl/client.h>
 #include "Shaders.h"
 #include "Vertex.h"
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
 
 using namespace Microsoft::WRL;
 
@@ -29,8 +27,7 @@ private:
 
 	static VertexShader myVertexShader;
 	static PixelShader myPixelShader;
-	static VertexBuffer<Vertex> myVertexBuffer;
-	static IndexBuffer myIndexBuffer;
+	static ComPtr<ID3D11Buffer> myVertexBuffer;
 
 	static ComPtr<ID3D11RenderTargetView> myRenderTargetView;
 	static ComPtr<ID3D11DepthStencilView> myDepthStencilView;
