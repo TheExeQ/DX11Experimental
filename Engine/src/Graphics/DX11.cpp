@@ -192,6 +192,8 @@ bool DX11::CreateRasterizer()
 	vp.TopLeftY = 0;
 	vp.Width = WindowContainer::GetWidth();
 	vp.Height = WindowContainer::GetHeight();
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
 
 	myContext->RSSetViewports(1, &vp);
 	
