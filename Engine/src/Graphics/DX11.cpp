@@ -241,10 +241,15 @@ bool DX11::CreateSquare()
 
 	Vertex vertices[] =
 	{
-		Vertex(-0.5f, -0.5f, 0.2f, 0.f, 1.f, 0.f), //Left Bottom
-		Vertex(-0.5f, 0.5f, 0.2f, 0.f, 1.f, 0.f), //Left Top
-		Vertex(0.5f, 0.5f, 0.2f, 0.f, 1.f, 0.f), //Right Top
-		Vertex(0.5f, -0.5f, 0.2f, 0.0f, 1.f, 0.f), //Right Bottom
+		Vertex(-0.5f, -0.5f, -0.5f, 1.f, 0.f, 0.f), //Left Bottom
+		Vertex(-0.5f, 0.5f, -0.5f, 0.f, 1.f, 0.f), //Left Top
+		Vertex(0.5f, 0.5f, -0.5f, 0.f, 0.f, 1.f), //Right Top
+		Vertex(0.5f, -0.5f, -0.5f, 0.0f, 0.f, 0.f), //Right Bottom
+
+		Vertex(-0.5f, -0.5f, 0.5f, 1.f, 1.f, 0.f), //Left Bottom
+		Vertex(-0.5f, 0.5f, 0.5f, 0.f, 1.f, 1.f), //Left Top
+		Vertex(0.5f, 0.5f, 0.5f, 1.f, 0.f, 1.f), //Right Top
+		Vertex(0.5f, -0.5f, 0.5f, 1.f, 1.f, 1.f), //Right Bottom
 	};
 
 	hr = myVertexBuffer.Initialize(myDevice.Get(), vertices, ARRAYSIZE(vertices));
@@ -256,8 +261,29 @@ bool DX11::CreateSquare()
 
 	DWORD indicies[] =
 	{
+		//Front
 		0, 1, 2,
 		0, 2, 3,
+
+		// Back
+		6, 5, 4,
+		7, 6, 4,
+
+		// Left
+		0, 4, 5,
+		0, 5, 1,
+
+		// Right
+		2, 6, 7,
+		2, 7, 3,
+
+		// Top
+		1, 5, 6,
+		1, 6, 2,
+
+		// Bottom
+		4, 0, 3,
+		4, 3, 7,
 	};
 
 	hr = myIndexBuffer.Initialize(myDevice.Get(), indicies, ARRAYSIZE(indicies));
@@ -282,12 +308,12 @@ bool DX11::RenderFrame()
 	const float bgColor[4] = { 0.8f, 0.8f, 0.8f, 1.0f };
 
 	{
-		//Rotation
+		//Cube
+		static auto pos = DirectX::XMMatrixIdentity();
 		static float rot = 0.f;
 		rot += 0.005f;
-		
-		myConstantBuffer.myData.matrix = DirectX::XMMatrixIdentity();
-		myConstantBuffer.myData.matrix = myConstantBuffer.myData.matrix * DirectX::XMMatrixRotationRollPitchYaw(0.f, 0.f, rot) 
+
+		myConstantBuffer.myData.matrix = pos * DirectX::XMMatrixRotationRollPitchYaw(0.f, rot, 0.f)
 			* myMainCamera.GetViewMatrix() * myMainCamera.GetProjectionMatrix();
 		myConstantBuffer.myData.matrix = DirectX::XMMatrixTranspose(myConstantBuffer.myData.matrix);
 		myConstantBuffer.Update();
