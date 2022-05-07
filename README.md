@@ -1,3 +1,3 @@
 # DX11Experimental
 
-Render a rainbow square using DirectX11
+Render a rotating rainbow square using DirectX11
