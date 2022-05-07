@@ -6,3 +6,4 @@ Order of examples by branch names:
 - Main
 - Triangle 
 - Square
+- Camera
