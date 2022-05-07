@@ -5,24 +5,18 @@
 ComPtr<ID3D11Device> DX11::myDevice = nullptr;
 ComPtr<ID3D11DeviceContext> DX11::myContext = nullptr;
 ComPtr<IDXGISwapChain> DX11::mySwapChain = nullptr;
-ComPtr<ID3D11RenderTargetView> DX11::myRenderTargetView = nullptr;
-ComPtr<ID3D11DepthStencilState> DX11::myDepthStencilState = nullptr;
-ComPtr<ID3D11DepthStencilView> DX11::myDepthStencilView = nullptr;
-ComPtr<ID3D11Texture2D> DX11:: myDepthStencilBuffer = nullptr;
-ComPtr<ID3D11RasterizerState> DX11::myRasterizerState = nullptr;
-
-VertexShader DX11::myVertexShader;
-PixelShader DX11::myPixelShader;
-VertexBuffer<Vertex> DX11::myVertexBuffer;
-IndexBuffer DX11::myIndexBuffer;
 
 bool DX11::Initialize(HWND hwnd)
 {
+	if (!myInstance) { myInstance = this; }
+	else { return false; }
+
 	if (!CreateDeviceAndSwapChain(hwnd)) { return false; };
 	if (!CreateRenderTargetView()) { return false; };
 	if (!CreateDepthStencil()) { return false; };
 	if (!CreateRasterizer()) { return false; };
 	if (!CreateShaders()) { return false; };
+	if (!CreateConstantBuffers()) { return false; };
 	if (!CreateSquare()) { return false; };
 
 	std::cout << "Successfully initialized DirectX!" << std::endl;
@@ -31,7 +25,7 @@ bool DX11::Initialize(HWND hwnd)
 
 bool DX11::CreateDeviceAndSwapChain(HWND hwnd)
 {
-	HRESULT result;	
+	HRESULT result;
 
 	// Settings for SwapChain
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
@@ -78,7 +72,7 @@ bool DX11::CreateDeviceAndSwapChain(HWND hwnd)
 bool DX11::CreateRenderTargetView()
 {
 	HRESULT result;
-	
+
 	// Get the back buffer from the swap chain
 	ID3D11Texture2D* backBuffer;
 	result = mySwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
@@ -109,7 +103,7 @@ bool DX11::CreateRenderTargetView()
 bool DX11::CreateDepthStencil()
 {
 	HRESULT result;
-	
+
 	// Create the depth stencil view
 	D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
 	ZeroMemory(&depthStencilBufferDesc, sizeof(depthStencilBufferDesc));
@@ -177,7 +171,7 @@ bool DX11::CreateRasterizer()
 	rasterizerDesc.MultisampleEnable = false;
 	rasterizerDesc.ScissorEnable = false;
 	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
-	
+
 	HRESULT result = myDevice->CreateRasterizerState(&rasterizerDesc, myRasterizerState.GetAddressOf());
 	if (FAILED(result))
 	{
@@ -196,7 +190,7 @@ bool DX11::CreateRasterizer()
 	vp.MaxDepth = 1.0f;
 
 	myContext->RSSetViewports(1, &vp);
-	
+
 	return true;
 }
 
@@ -213,7 +207,7 @@ bool DX11::CreateShaders()
 	{
 		return false;
 	};
-	
+
 	if (!myPixelShader.Init(L"../bin/Default-ps.cso"))
 	{
 		return false;
@@ -221,10 +215,30 @@ bool DX11::CreateShaders()
 	return true;
 }
 
+bool DX11::CreateConstantBuffers()
+{
+	HRESULT hr;
+	// Set transform matrix of the sqaure to constant buffer
+	hr = myConstantBuffer.Init(myDevice.Get(), myContext.Get());
+	if (FAILED(hr))
+	{
+		std::cout << "Failed to create constant buffer" << std::endl;
+		return false;
+	}
+
+	hr = myConstantBuffer.Update();
+	if (FAILED(hr))
+	{
+		std::cout << "Failed to update constant buffer" << std::endl;
+		return false;
+	}
+	return true;
+}
+
 bool DX11::CreateSquare()
 {
 	HRESULT hr;
-	
+
 	Vertex vertices[] =
 	{
 		Vertex(-0.5f, -0.5f, 0.2f, 0.f, 1.f, 0.f), //Left Bottom
@@ -244,12 +258,12 @@ bool DX11::CreateSquare()
 		std::cout << "Failed to initialize vertex buffer" << std::endl;
 		return false;
 	}
-	
+
 	DWORD indicies[] =
 	{
 		0, 1, 2,
 		0, 2, 3,
-		
+
 		4, 5, 6,
 		4, 6, 7,
 	};
@@ -260,6 +274,14 @@ bool DX11::CreateSquare()
 		std::cout << "Failed to initialize index buffer" << std::endl;
 		return false;
 	}
+
+	myMainCamera.SetProjectionValues(90.f, 16.f / 9.f, 0.1f, 1000.f);
+	myMainCamera.SetPosition(0.f, 0.f, -2.f);
+
+	myConstantBuffer.myData.matrix = DirectX::XMMatrixIdentity();
+	myConstantBuffer.myData.matrix = myConstantBuffer.myData.matrix * myMainCamera.GetViewMatrix() * myMainCamera.GetProjectionMatrix();
+	myConstantBuffer.myData.matrix = DirectX::XMMatrixTranspose(myConstantBuffer.myData.matrix);
+	myConstantBuffer.Update();
 	return true;
 }
 
@@ -267,19 +289,30 @@ bool DX11::RenderFrame()
 {
 	const float bgColor[4] = { 0.8f, 0.8f, 0.8f, 1.0f };
 
+	{
+		//Rotation of the camera
+		myMainCamera.AdjustRotation(0.f, 0.f, 0.005f);
+
+		myConstantBuffer.myData.matrix = DirectX::XMMatrixIdentity();
+		myConstantBuffer.myData.matrix = myConstantBuffer.myData.matrix * myMainCamera.GetViewMatrix() * myMainCamera.GetProjectionMatrix();
+		myConstantBuffer.myData.matrix = DirectX::XMMatrixTranspose(myConstantBuffer.myData.matrix);
+		myConstantBuffer.Update();
+	}
+
 	myContext->OMSetRenderTargets(1, myRenderTargetView.GetAddressOf(), myDepthStencilView.Get());
 	myContext->ClearRenderTargetView(myRenderTargetView.Get(), bgColor);
 	myContext->ClearDepthStencilView(myDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	
+
 	myContext->OMSetDepthStencilState(myDepthStencilState.Get(), 1);
 	myContext->RSSetState(myRasterizerState.Get());
-	
+
 	myContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	myContext->IASetInputLayout(myVertexShader.GetInputLayout());
 
 	myContext->VSSetShader(myVertexShader.GetShader(), nullptr, 0);
 	myContext->PSSetShader(myPixelShader.GetShader(), nullptr, 0);
-	
+
+	myContext->VSSetConstantBuffers(0, 1, myConstantBuffer.GetAddressOf());
 
 	UINT offset = 0;
 

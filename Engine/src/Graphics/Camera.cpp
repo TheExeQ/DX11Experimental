@@ -1,99 +1,148 @@
 #include "Camera.h"
-#include <glm/gtc/matrix_transform.hpp>
 
 Camera::Camera()
 {
-	myPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-	myRotation = glm::vec3(0.0f, 0.0f, 0.0f);
-	myPositionV4 = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	myRotationV4 = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	UpdateViewMatrix();
+	this->pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	this->posVector = XMLoadFloat3(&this->pos);
+	this->rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	this->rotVector = XMLoadFloat3(&this->rot);
+	this->UpdateViewMatrix();
 }
 
 void Camera::SetProjectionValues(float fovDegrees, float aspectRatio, float nearZ, float farZ)
 {
-	myProjectionMatrix = glm::perspective(glm::radians(fovDegrees), aspectRatio, nearZ, farZ);
+	float fovRadians = (fovDegrees / 360.0f) * XM_2PI;
+	this->projectionMatrix = XMMatrixPerspectiveFovLH(fovRadians, aspectRatio, nearZ, farZ);
 }
 
-const glm::mat4& Camera::GetViewMatrix() const
+const XMMATRIX& Camera::GetViewMatrix() const
 {
-	return myViewMatrix;
+	return this->viewMatrix;
 }
 
-const glm::mat4& Camera::GetProjectionMatrix() const
+const XMMATRIX& Camera::GetProjectionMatrix() const
 {
-	return myProjectionMatrix;
+	return this->projectionMatrix;
 }
 
-const glm::vec4& Camera::GetPositionVector() const
+const XMVECTOR& Camera::GetPositionVector() const
 {
-	return myPositionV4;
+	return this->posVector;
 }
 
-const glm::vec3& Camera::GetPositionFloat3() const
+const XMFLOAT3& Camera::GetPositionFloat3() const
 {
-	return myPosition;
+	return this->pos;
 }
 
-const glm::vec4& Camera::GetRotationVector() const
+const XMVECTOR& Camera::GetRotationVector() const
 {
-	return myRotationV4;
+	return this->rotVector;
 }
 
-const glm::vec3& Camera::GetRotationFloat3() const
+const XMFLOAT3& Camera::GetRotationFloat3() const
 {
-	return myRotation;
+	return this->rot;
 }
 
-void Camera::SetPosition(const glm::vec4& pos)
+void Camera::SetPosition(const XMVECTOR& pos)
 {
-	myPositionV4 = pos;
-	UpdateViewMatrix();
+	XMStoreFloat3(&this->pos, pos);
+	this->posVector = pos;
+	this->UpdateViewMatrix();
 }
 
 void Camera::SetPosition(float x, float y, float z)
 {
-	myPosition = glm::vec3(x, y, z);
-	UpdateViewMatrix();
+	this->pos = XMFLOAT3(x, y, z);
+	this->posVector = XMLoadFloat3(&this->pos);
+	this->UpdateViewMatrix();
 }
 
-void Camera::AdjustPosition(const glm::vec4& pos)
+void Camera::AdjustPosition(const XMVECTOR& pos)
 {
-	myPositionV4 += pos;
-	UpdateViewMatrix();
+	this->posVector += pos;
+	XMStoreFloat3(&this->pos, this->posVector);
+	this->UpdateViewMatrix();
 }
 
 void Camera::AdjustPosition(float x, float y, float z)
 {
-	myPosition += glm::vec3(x, y, z);
-	UpdateViewMatrix();
+	this->pos.x += x;
+	this->pos.y += y;
+	this->pos.z += z;
+	this->posVector = XMLoadFloat3(&this->pos);
+	this->UpdateViewMatrix();
 }
 
-void Camera::SetRotation(const glm::vec4& rot)
+void Camera::SetRotation(const XMVECTOR& rot)
 {
-	myRotationV4 = rot;
-	UpdateViewMatrix();
+	this->rotVector = rot;
+	XMStoreFloat3(&this->rot, rot);
+	this->UpdateViewMatrix();
 }
 
 void Camera::SetRotation(float x, float y, float z)
 {
-	myRotation = glm::vec3(x, y, z);
-	UpdateViewMatrix();
+	this->rot = XMFLOAT3(x, y, z);
+	this->rotVector = XMLoadFloat3(&this->rot);
+	this->UpdateViewMatrix();
 }
 
-void Camera::AdjustRotation(const glm::vec4& rot)
+void Camera::AdjustRotation(const XMVECTOR& rot)
 {
-	myRotationV4 += rot;
-	UpdateViewMatrix();
+	this->rotVector += rot;
+	XMStoreFloat3(&this->rot, this->rotVector);
+	this->UpdateViewMatrix();
 }
 
 void Camera::AdjustRotation(float x, float y, float z)
 {
-	myRotation += glm::vec3(x, y, z);
-	UpdateViewMatrix();
+	this->rot.x += x;
+	this->rot.y += y;
+	this->rot.z += z;
+	this->rotVector = XMLoadFloat3(&this->rot);
+	this->UpdateViewMatrix();
 }
 
-void Camera::UpdateViewMatrix()
+void Camera::SetLookAtPos(XMFLOAT3 lookAtPos)
 {
-	myViewMatrix = glm::lookAt(myPosition, myPosition + DEFAULT_FORWARD_VECTOR, DEFAULT_UP_VECTOR);
+	//Verify that look at pos is not the same as cam pos. They cannot be the same as that wouldn't make sense and would result in undefined behavior.
+	if (lookAtPos.x == this->pos.x && lookAtPos.y == this->pos.y && lookAtPos.z == this->pos.z)
+		return;
+
+	lookAtPos.x = this->pos.x - lookAtPos.x;
+	lookAtPos.y = this->pos.y - lookAtPos.y;
+	lookAtPos.z = this->pos.z - lookAtPos.z;
+
+	float pitch = 0.0f;
+	if (lookAtPos.y != 0.0f)
+	{
+		const float distance = sqrt(lookAtPos.x * lookAtPos.x + lookAtPos.z * lookAtPos.z);
+		pitch = atan(lookAtPos.y / distance);
+	}
+
+	float yaw = 0.0f;
+	if (lookAtPos.x != 0.0f)
+	{
+		yaw = atan(lookAtPos.x / lookAtPos.z);
+	}
+	if (lookAtPos.z > 0)
+		yaw += XM_PI;
+
+	this->SetRotation(pitch, yaw, 0.0f);
+}
+
+void Camera::UpdateViewMatrix() //Updates view matrix and also updates the movement vectors
+{
+	//Calculate camera rotation matrix
+	XMMATRIX camRotationMatrix = XMMatrixRotationRollPitchYaw(this->rot.x, this->rot.y, this->rot.z);
+	//Calculate unit vector of cam target based off camera forward value transformed by cam rotation matrix
+	XMVECTOR camTarget = XMVector3TransformCoord(this->DEFAULT_FORWARD_VECTOR, camRotationMatrix);
+	//Adjust cam target to be offset by the camera's current position
+	camTarget += this->posVector;
+	//Calculate up direction based on current rotation
+	XMVECTOR upDir = XMVector3TransformCoord(this->DEFAULT_UP_VECTOR, camRotationMatrix);
+	//Rebuild view matrix
+	this->viewMatrix = XMMatrixLookAtLH(this->posVector, camTarget, upDir);
 }

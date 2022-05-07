@@ -1,5 +1,6 @@
 #include "Win32/WindowContainer.h"
 #include "Graphics/DX11.h"
+#include <iostream>
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -17,15 +18,28 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	int WindowHeight = 720;
 
 	WindowContainer window;
-	window.Initialize(hInstance, WindowWidth, WindowHeight);
+	auto result = window.Initialize(hInstance, WindowWidth, WindowHeight);
+	if (!result)
+	{
+		std::cout << "Failed to initialize Win32" << std::endl;
+		std::cin.get();
+		return 0;
+	}
 
 	// Initialize DirectX
-	DX11::Initialize(window.GetWindowHandle());
+	DX11 directX;
+	result = directX.Initialize(window.GetWindowHandle());
+	if (!result)
+	{
+		std::cout << "Failed to initialize DirectX" << std::endl;
+		std::cin.get();
+		return 0;
+	}
 
 	// Run the message loop
 	while (window.ProcessMessages())
 	{
-		DX11::RenderFrame();
+		directX.RenderFrame();
 	}
 
 	return 0;

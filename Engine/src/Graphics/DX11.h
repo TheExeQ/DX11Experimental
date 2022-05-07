@@ -5,37 +5,46 @@
 #include "Vertex.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "ConstantBuffer.h"
+#include "Camera.h"
 
 using namespace Microsoft::WRL;
 
 class DX11
 {
 public:
-	static bool Initialize(HWND hwnd);
-	static bool RenderFrame();
+	bool Initialize(HWND hwnd);
+	bool RenderFrame();
+	DX11& Get() const { return *myInstance; };
 
 	static ComPtr<ID3D11Device> myDevice;
 	static ComPtr<ID3D11DeviceContext> myContext;
 	static ComPtr<IDXGISwapChain> mySwapChain;
 	
 private:
-	static bool CreateDeviceAndSwapChain(HWND hwnd);
-	static bool CreateRenderTargetView();
-	static bool CreateDepthStencil();
-	static bool CreateRasterizer();
-	static bool CreateShaders();
+	bool CreateDeviceAndSwapChain(HWND hwnd);
+	bool CreateRenderTargetView();
+	bool CreateDepthStencil();
+	bool CreateRasterizer();
+	bool CreateShaders();
+	bool CreateConstantBuffers();
 
-	static bool CreateSquare();
+	bool CreateSquare();
 
-	static VertexShader myVertexShader;
-	static PixelShader myPixelShader;
-	static VertexBuffer<Vertex> myVertexBuffer;
-	static IndexBuffer myIndexBuffer;
+	VertexShader myVertexShader;
+	PixelShader myPixelShader;
+	VertexBuffer<Vertex> myVertexBuffer;
+	IndexBuffer myIndexBuffer;
+	ConstantBuffer<VSMatrix> myConstantBuffer;
 
-	static ComPtr<ID3D11RenderTargetView> myRenderTargetView;
-	static ComPtr<ID3D11DepthStencilView> myDepthStencilView;
-	static ComPtr<ID3D11Texture2D> myDepthStencilBuffer;
-	static ComPtr<ID3D11DepthStencilState> myDepthStencilState;
-	static ComPtr<ID3D11RasterizerState> myRasterizerState;
+	ComPtr<ID3D11RenderTargetView> myRenderTargetView;
+	ComPtr<ID3D11DepthStencilView> myDepthStencilView;
+	ComPtr<ID3D11Texture2D> myDepthStencilBuffer;
+	ComPtr<ID3D11DepthStencilState> myDepthStencilState;
+	ComPtr<ID3D11RasterizerState> myRasterizerState;
+
+	Camera myMainCamera;
+
+	DX11* myInstance = nullptr;
 };
 

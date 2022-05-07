@@ -1,5 +1,6 @@
 #pragma once
-#include <glm/glm.hpp>
+#include <DirectXMath.h>
+using namespace DirectX;
 
 class Camera
 {
@@ -7,32 +8,33 @@ public:
 	Camera();
 	void SetProjectionValues(float fovDegrees, float aspectRatio, float nearZ, float farZ);
 
-	const glm::mat4& GetViewMatrix() const;
-	const glm::mat4& GetProjectionMatrix() const;
+	const XMMATRIX& GetViewMatrix() const;
+	const XMMATRIX& GetProjectionMatrix() const;
 
-	const glm::vec4& GetPositionVector() const;
-	const glm::vec3& GetPositionFloat3() const;
-	const glm::vec4& GetRotationVector() const;
-	const glm::vec3& GetRotationFloat3() const;
+	const XMVECTOR& GetPositionVector() const;
+	const XMFLOAT3& GetPositionFloat3() const;
+	const XMVECTOR& GetRotationVector() const;
+	const XMFLOAT3& GetRotationFloat3() const;
 
-	void SetPosition(const glm::vec4& pos);
+	void SetPosition(const XMVECTOR& pos);
 	void SetPosition(float x, float y, float z);
-	void AdjustPosition(const glm::vec4& pos);
+	void AdjustPosition(const XMVECTOR& pos);
 	void AdjustPosition(float x, float y, float z);
-	void SetRotation(const glm::vec4& rot);
+	void SetRotation(const XMVECTOR& rot);
 	void SetRotation(float x, float y, float z);
-	void AdjustRotation(const glm::vec4& rot);
+	void AdjustRotation(const XMVECTOR& rot);
 	void AdjustRotation(float x, float y, float z);
+	void SetLookAtPos(XMFLOAT3 lookAtPos);
 
 private:
 	void UpdateViewMatrix();
-	glm::vec4 myPositionV4;
-	glm::vec4 myRotationV4;
-	glm::vec3 myPosition;
-	glm::vec3 myRotation;
-	glm::mat4 myViewMatrix;
-	glm::mat4 myProjectionMatrix;
+	XMVECTOR posVector;
+	XMVECTOR rotVector;
+	XMFLOAT3 pos;
+	XMFLOAT3 rot;
+	XMMATRIX viewMatrix;
+	XMMATRIX projectionMatrix;
 
-	const glm::vec3 DEFAULT_FORWARD_VECTOR = glm::vec3(0.0f, 0.0f, 1.0f);
-	const glm::vec3 DEFAULT_UP_VECTOR = glm::vec3(0.0f, 1.0f, 0.0f);
+	const XMVECTOR DEFAULT_FORWARD_VECTOR = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	const XMVECTOR DEFAULT_UP_VECTOR = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 };
