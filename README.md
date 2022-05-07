@@ -7,3 +7,4 @@ Order of examples by branch names:
 - Triangle 
 - Square
 - Camera
+- Cube
